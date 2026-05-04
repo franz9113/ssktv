@@ -38,6 +38,13 @@ export const updateRoom = mutation({
   },
 });
 
+export const deleteRoom = mutation({
+  args: { id: v.id("rooms") },
+  handler: async (ctx, args) => {
+    await ctx.db.delete(args.id);
+  },
+});
+
 export const startSession = mutation({
   args: { 
     id: v.id("rooms"), 

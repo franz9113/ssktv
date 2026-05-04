@@ -20,4 +20,22 @@ export default defineSchema({
     paymentMethod: v.string(), 
     completedAt: v.number(),
   }),
+  settings: defineTable({
+    adminUsername: v.string(),
+    adminPassword: v.string(), 
+    staffPassword: v.string(),
+    systemLive: v.boolean(),
+  }),
+  users: defineTable({
+    name: v.string(),
+    role: v.union(v.literal("admin"), v.literal("staff")),
+    status: v.string(),
+    
+    // For Staff
+    pin: v.optional(v.string()), 
+    
+    // For Admin
+    username: v.optional(v.string()),
+    password: v.optional(v.string()),
+  }).index("by_pin", ["pin"]).index("by_username", ["username"]),
 });

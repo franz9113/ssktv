@@ -1,4 +1,5 @@
 import { LayoutDashboard, History, Settings, LogOut, ChevronLeft, ChevronRight } from "lucide-react";
+import { useState } from "react";
 
 interface SidebarProps {
   currentView: 'dashboard' | 'sales' | 'settings';
@@ -6,15 +7,17 @@ interface SidebarProps {
   isOpen: boolean;
   setIsOpen: (isOpen: boolean) => void;
   isAdmin: boolean; // Add this prop to control visibility
+  onLogout: () => void;
 }
 
-export default function Sidebar({ currentView, setView, isOpen, setIsOpen, isAdmin }: SidebarProps) {
-  
-  // Conditionally build the menu
+export default function Sidebar({ currentView, setView, isOpen, setIsOpen, isAdmin, onLogout }: SidebarProps) {
+  const [showConfirm, setShowConfirm] = useState(false);
+
+
   const menuItems = [
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
     { id: 'sales', label: 'Sales History', icon: History },
-    // Only include settings if the user is an admin
+
     ...(isAdmin ? [{ id: 'settings', label: 'Settings', icon: Settings }] : []),
   ];
 
@@ -64,20 +67,46 @@ export default function Sidebar({ currentView, setView, isOpen, setIsOpen, isAdm
 
       {/* System Status / Logout */}
       <div className="p-4 border-t border-slate-800 space-y-2">
+  {!showConfirm ? (
+    <button
+      onClick={() => setShowConfirm(true)}
+      className={`flex items-center gap-4 w-full p-4 rounded-2xl transition-all text-slate-400 hover:bg-red-500/10 hover:text-red-500 ${!isOpen && 'justify-center'}`}
+      title={!isOpen ? 'Logout' : ''}
+    >
+      <LogOut size={20} />
+      {isOpen && <span className="font-bold uppercase text-[10px] tracking-widest">Logout</span>}
+    </button>
+  ) : (
+    <div className={`flex ${isOpen ? 'flex-col' : 'flex-row'} gap-2 p-2 bg-slate-950/50 rounded-2xl border border-red-500/20 animate-in fade-in zoom-in duration-200`}>
+      {isOpen && (
+        <span className="text-[9px] font-black text-red-500 uppercase tracking-tighter text-center mb-1">
+          Are you sure?
+        </span>
+      )}
+      <div className="flex gap-2 w-full">
         <button
-          onClick={() => console.log("Logout triggered")}
-          className={`flex items-center gap-4 w-full p-4 rounded-2xl transition-all text-slate-400 hover:bg-red-500/10 hover:text-red-500 ${!isOpen && 'justify-center'}`}
-          title={!isOpen ? 'Logout' : ''}
+          onClick={onLogout}
+          className="flex-1 bg-red-600 hover:bg-red-500 text-white p-2 rounded-xl text-[10px] font-black uppercase transition-colors"
+          title="Confirm Logout"
         >
-          <LogOut size={20} />
-          {isOpen && <span className="font-bold uppercase text-[10px] tracking-widest">Logout</span>}
+          {isOpen ? 'Yes' : 'Y'}
         </button>
-
-        <div className={`flex items-center gap-3 pt-2 ${!isOpen && 'justify-center'}`}>
-          <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-          {isOpen && <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">System Live</span>}
-        </div>
+        <button
+          onClick={() => setShowConfirm(false)}
+          className="flex-1 bg-slate-800 hover:bg-slate-700 text-slate-300 p-2 rounded-xl text-[10px] font-black uppercase transition-colors"
+          title="Cancel"
+        >
+          {isOpen ? 'No' : 'N'}
+        </button>
       </div>
+    </div>
+  )}
+
+  <div className={`flex items-center gap-3 pt-2 ${!isOpen && 'justify-center'}`}>
+    <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+    {isOpen && <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">System Live</span>}
+  </div>
+</div>
     </aside>
   );
 }

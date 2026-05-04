@@ -3,6 +3,7 @@ import { api } from "../../../convex/_generated/api";
 import RoomCard from "@/components/dashboard/RoomCard";
 import CheckoutModal from '@/components/modals/CheckoutModal';
 import { useState } from "react";
+import LoadingState from "../layout/LoadingState";
 
 export default function KaraokeDashboard() {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -16,9 +17,7 @@ export default function KaraokeDashboard() {
 
   const recordSale = useMutation(api.sales.recordSale);
 
-  if (rooms === undefined) {
-    return <div className="p-8 text-center text-white">Loading rooms...</div>;
-  }
+  if (!rooms) return <LoadingState message="REFRESHING ROOM STATUS" />;
 
   const handleEndSession = async (roomId: string, roomName: string) => {
     const room = rooms.find(r => r._id === roomId);
