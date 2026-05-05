@@ -2,14 +2,17 @@ import { defineSchema, defineTable } from "convex/server";
 import { v } from "convex/values";
 
 export default defineSchema({
-    rooms: defineTable({
+  rooms: defineTable({
     name: v.string(),
-    status: v.union(v.literal("available"), v.literal("occupied")),
+    status: v.string(), // "available", "occupied", "cleaning"
     hourlyRate: v.number(),
-    foodTotal: v.optional(v.number()), 
     startTime: v.optional(v.number()),
-    currentSessionEnd: v.optional(v.number()),
+    // These must be defined here to stop the red lines:
     isOpenTime: v.optional(v.boolean()),
+    isFixedTime: v.optional(v.boolean()), // Useful for your logic
+    currentSessionEnd: v.optional(v.number()),
+    plannedDuration: v.optional(v.number()), 
+    foodTotal: v.optional(v.number()),
   }),
   sales: defineTable({
     roomName: v.string(),

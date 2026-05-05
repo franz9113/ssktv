@@ -21,31 +21,47 @@ export default function KaraokeDashboard() {
 
   const handleEndSession = async (roomId: string, roomName: string) => {
     const room = rooms.find(r => r._id === roomId);
-    if (!room) return;
+  if (!room) return;
 
+  // 1. Determine the "Final Duration"
+  let finalDuration: number;
+  
+  if (room.isFixedTime) {
+    // If Fixed, we use the original agreed hours (e.g., 1 or 2)
+    // even if the staff is late clicking 'End'
+    finalDuration = room.plannedDuration || 1; 
+  } else {
+    // If Open Time, calculate elapsed and round UP to the nearest whole hour
     const now = Date.now();
-    const duration = (now - (room.startTime || now)) / (1000 * 60 * 60);
-    const roomCharge = Math.ceil(duration) * room.hourlyRate;
-    const foodCharge = room.foodTotal || 0;
+    const elapsedHours = (now - (room.startTime || now)) / (1000 * 60 * 60);
+    finalDuration = Math.ceil(elapsedHours); 
+  }
 
-    setCurrentBill({
-      roomId, 
-      roomName,
-      total: roomCharge + foodCharge,
-      roomCharge,
-      foodCharge,
-    });
-    setIsModalOpen(true);
-  };
+  // 2. Lock the Charges
+  const roomCharge = finalDuration * room.hourlyRate;
+  const foodCharge = room.foodTotal || 0;
 
-  const confirmClear = async () => {
+  setCurrentBill({
+    roomId, 
+    roomName,
+    total: roomCharge + foodCharge,
+    roomCharge,
+    foodCharge,
+    duration: finalDuration, // This is now a clean whole number (1, 2, 3...)
+  });
+
+  setIsModalOpen(true);
+};
+
+const confirmClear = async () => {
   if (currentBill?.roomId) {
     await recordSale({
       roomName: currentBill.roomName,
       roomCharge: currentBill.roomCharge,
       foodCharge: currentBill.foodCharge,
       totalAmount: currentBill.total,
-      duration: currentBill.duration || 1, 
+      // We pass the locked whole number duration here
+      duration: currentBill.duration, 
       paymentMethod: "Cash",
       completedAt: Date.now(),
     });

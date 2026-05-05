@@ -13,9 +13,14 @@ function useSalesLogic(sales: any[] | undefined, searchTerm: string, currentPage
   // 1. Filter data based on search term
   const filteredSales = useMemo(() => {
     if (!sales) return [];
-    return sales.filter((s) =>
-      s.roomName.toLowerCase().includes(searchTerm.toLowerCase())
-    );
+    
+    return sales
+      .filter((s) => s.roomName.toLowerCase().includes(searchTerm.toLowerCase()))
+      .map((s) => ({
+        ...s,
+        // FORCE duration to be a whole number here
+        duration: Math.round(s.duration || 0) 
+      }));
   }, [sales, searchTerm]);
 
   // 2. Calculate totals for the filtered set (The "Math" trick)

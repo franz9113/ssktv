@@ -48,17 +48,23 @@ export const deleteRoom = mutation({
 export const startSession = mutation({
   args: { 
     id: v.id("rooms"), 
-    isOpenTime: v.boolean() 
+    isOpenTime: v.boolean(),
+    hours: v.optional(v.number()) // Add this to capture 1, 2, or 3 hours
   },
   handler: async (ctx, args) => {
     const now = Date.now();
-    const oneHour = 60 * 60 * 1000;
+    // Use the passed hours or default to 1
+    const selectedHours = args.hours || 1;
+    const durationMs = selectedHours * 60 * 60 * 1000;
 
     await ctx.db.patch(args.id, {
       status: "occupied",
       startTime: now,
       isOpenTime: args.isOpenTime,
-      currentSessionEnd: args.isOpenTime ? undefined : now + oneHour,
+      // Fixed logic: Save the agreed whole number of hours
+      plannedDuration: args.isOpenTime ? undefined : selectedHours,
+      currentSessionEnd: args.isOpenTime ? undefined : now + durationMs,
+      foodTotal: 0,
     });
   },
 });
