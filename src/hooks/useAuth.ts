@@ -1,6 +1,6 @@
 import { useState, useCallback } from "react";
 
-export type Role = "admin" | "staff" | null;
+export type Role = "admin" | "staff" | "super-admin" | null;
 
 export function useAuth() {
   const [userRole, setUserRole] = useState<Role>(() => {
@@ -10,6 +10,8 @@ export function useAuth() {
   const login = useCallback((role: Role) => {
     if (role) {
       localStorage.setItem("ktv_session_role", role);
+    } else {
+      localStorage.removeItem("ktv_session_role");
     }
     setUserRole(role);
   }, []);
@@ -19,7 +21,8 @@ export function useAuth() {
     setUserRole(null);
   }, []);
 
-  const isAdmin = userRole === "admin";
+  const isAdmin = userRole === "admin" || userRole === "super-admin";
+  const isSuperAdmin = userRole === "super-admin";
 
-  return { userRole, isAdmin, login, logout };
+  return { userRole, isAdmin, isSuperAdmin, login, logout };
 }

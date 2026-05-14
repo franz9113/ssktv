@@ -20,6 +20,7 @@ interface RoomCardProps {
   onEnd: (id: Id<"rooms">) => void;
   onExtend: (id: Id<"rooms">) => void;
   onAddFood: (id: Id<"rooms">, amount: number) => void;
+  canEditSession?: boolean;
 }
 
 const RoomCard = (props: RoomCardProps) => {
@@ -96,7 +97,11 @@ const RoomCard = (props: RoomCardProps) => {
         status={room.status}
         isOpenTime={room.isOpenTime}
         foodTotal={room.foodTotal || 0}
-        {...props} 
+        canEditSession={props.canEditSession}
+        onStart={props.onStart}
+        onEnd={props.onEnd}
+        onExtend={props.onExtend}
+        onAddFood={props.onAddFood}
       />
     </div>
   );

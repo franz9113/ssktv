@@ -11,10 +11,11 @@ interface RoomActionsProps {
   onEnd: (id: Id<"rooms">) => void;
   onExtend: (id: Id<"rooms">) => void;
   onAddFood: (id: Id<"rooms">, amount: number) => void;
+  canEditSession?: boolean;
 }
 
 const RoomActions = ({ 
-  roomId, status, isOpenTime, foodTotal, onStart, onEnd, onExtend, onAddFood 
+  roomId, status, isOpenTime, foodTotal, onStart, onEnd, onExtend, onAddFood, canEditSession 
 }: RoomActionsProps) => {
   const isOccupied = status === "occupied";
   
@@ -89,7 +90,7 @@ const RoomActions = ({
       {/* --- SESSION ACTIONS --- */}
       <div className="grid grid-cols-2 gap-2 relative">
         {/* EXTEND BUTTON (Still uses double-tap for safety) */}
-        {!isOpenTime && (
+        {!isOpenTime && canEditSession && (
           showExtendConfirm ? (
             <button 
               onClick={() => { onExtend(roomId); setShowExtendConfirm(false); }} 

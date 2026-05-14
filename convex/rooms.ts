@@ -53,7 +53,6 @@ export const startSession = mutation({
   },
   handler: async (ctx, args) => {
     const now = Date.now();
-    // Use the passed hours or default to 1
     const selectedHours = args.hours || 1;
     const durationMs = selectedHours * 60 * 60 * 1000;
 
@@ -61,7 +60,6 @@ export const startSession = mutation({
       status: "occupied",
       startTime: now,
       isOpenTime: args.isOpenTime,
-      // Fixed logic: Save the agreed whole number of hours
       plannedDuration: args.isOpenTime ? undefined : selectedHours,
       currentSessionEnd: args.isOpenTime ? undefined : now + durationMs,
       foodTotal: 0,
@@ -73,33 +71,30 @@ export const endSession = mutation({
   args: { id: v.id("rooms") },
   handler: async (ctx, args) => {
     const room = await ctx.db.get(args.id);
-    if (!room || !room.startTime) return;
+    if (!room) return;
 
+    const isOpenTime = room.isOpenTime ?? true;
     const now = Date.now();
-    const hoursUsed = (now - room.startTime) / (1000 * 60 * 60);
-    const roomCharge = Math.ceil(hoursUsed) * room.hourlyRate;
+    const elapsedHours = room.startTime ? (now - room.startTime) / (1000 * 60 * 60) : 0;
+
+    const finalDuration = isOpenTime
+      ? Math.max(1, Math.ceil(elapsedHours))
+      : room.plannedDuration || 1;
+
+    const roomCharge = finalDuration * room.hourlyRate;
     const foodCharge = room.foodTotal || 0;
     const total = roomCharge + foodCharge;
 
-    await ctx.db.insert("sales", {
-      roomName: room.name,
-      roomCharge,
-      foodCharge,
-      totalAmount: total,
-      duration: hoursUsed,
-      paymentMethod: "Cash", // Default payment method
-      completedAt: now,
-    });
-
-    // 2. RESET THE ROOM
+    // Reset the room to available
     await ctx.db.patch(args.id, {
       status: "available",
       startTime: undefined,
       currentSessionEnd: undefined,
+      plannedDuration: undefined, // Clear the counter
       foodTotal: 0,
     });
 
-    return { total, roomCharge, foodCharge };
+    return { total, roomCharge, foodCharge, duration: finalDuration };
   },
 });
 
@@ -107,13 +102,14 @@ export const extendSession = mutation({
   args: { id: v.id("rooms") },
   handler: async (ctx, args) => {
     const room = await ctx.db.get(args.id);
-    if (!room || !room.currentSessionEnd) return;
+    if (!room) return;
 
-    const oneHour = (60 * 60 * 1000);
-    
+    const oneHourMs = 60 * 60 * 1000;
+    const currentPlanned = room.plannedDuration || 1;
+
     await ctx.db.patch(args.id, {
-      // Add 1 hour to the existing end time
-      currentSessionEnd: room.currentSessionEnd + oneHour,
+      currentSessionEnd: (room.currentSessionEnd || Date.now()) + oneHourMs,
+      plannedDuration: currentPlanned + 1,
     });
   },
 });

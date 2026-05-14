@@ -6,8 +6,15 @@ import DataBackup from "./DataBackup";
 
 type SettingTab = "users" | "rooms" | "data";
 
-export default function Settings({ isAdmin }: { isAdmin: boolean }) {
+interface SettingsProps {
+  userRole: "staff" | "admin" | "super-admin";
+  isSuperAdmin: boolean;
+}
+
+export default function Settings({ userRole, isSuperAdmin }: SettingsProps) {
   const [activeTab, setActiveTab] = useState<SettingTab>("users");
+
+  const isAdmin = userRole === "admin" || isSuperAdmin;
 
   // Guard for non-admins (Double security)
   if (!isAdmin) {
@@ -41,19 +48,21 @@ export default function Settings({ isAdmin }: { isAdmin: boolean }) {
           icon={<DoorOpen size={18} />} 
           label="Rooms" 
         />
-        <TabButton 
-          active={activeTab === "data"} 
-          onClick={() => setActiveTab("data")} 
-          icon={<Database size={18} />} 
-          label="Database" 
-        />
+        {isSuperAdmin && (
+          <TabButton 
+            active={activeTab === "data"} 
+            onClick={() => setActiveTab("data")} 
+            icon={<Database size={18} />} 
+            label="Database" 
+          />
+        )}
       </div>
 
       {/* Render Sub-components */}
       <div className="mt-8">
-        {activeTab === "users" && <UserManagement />}
-        {activeTab === "rooms" && <RoomSettings />}
-        {activeTab === "data" && <DataBackup />}
+        {activeTab === "users" && <UserManagement userRole={userRole} />}
+        {activeTab === "rooms" && <RoomSettings userRole={userRole} />}
+        {activeTab === "data" && isSuperAdmin && <DataBackup />}
       </div>
     </div>
   );

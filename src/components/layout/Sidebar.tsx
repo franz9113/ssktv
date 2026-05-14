@@ -6,11 +6,11 @@ interface SidebarProps {
   setView: (view: 'dashboard' | 'sales' | 'settings') => void;
   isOpen: boolean;
   setIsOpen: (isOpen: boolean) => void;
-  isAdmin: boolean; // Add this prop to control visibility
+  canAccessSettings: boolean;
   onLogout: () => void;
 }
 
-export default function Sidebar({ currentView, setView, isOpen, setIsOpen, isAdmin, onLogout }: SidebarProps) {
+export default function Sidebar({ currentView, setView, isOpen, setIsOpen, canAccessSettings, onLogout }: SidebarProps) {
   const [showConfirm, setShowConfirm] = useState(false);
 
 
@@ -18,7 +18,7 @@ export default function Sidebar({ currentView, setView, isOpen, setIsOpen, isAdm
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
     { id: 'sales', label: 'Sales History', icon: History },
 
-    ...(isAdmin ? [{ id: 'settings', label: 'Settings', icon: Settings }] : []),
+    ...(canAccessSettings ? [{ id: 'settings', label: 'Settings', icon: Settings }] : []),
   ];
 
   return (

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Lock, User, ShieldAlert, Loader2 } from "lucide-react"; // Added Loader2
+import { Lock, User, ShieldAlert, Loader2 } from "lucide-react";
 import { useQuery } from "convex/react";
 import { api } from "../../../convex/_generated/api";
 

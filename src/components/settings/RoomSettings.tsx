@@ -10,9 +10,14 @@ import AddRoomModal from "../modals/rooms/AddRoomModal";
 import EditRoomModal from "../modals/rooms/EditRoomModal";
 
 
-export default function RoomSettings() {
+interface RoomSettingsProps {
+  userRole: "staff" | "admin" | "super-admin";
+}
+
+export default function RoomSettings({ userRole }: RoomSettingsProps) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingRoom, setEditingRoom] = useState<Doc<"rooms"> | null>(null);
+  const isSuperAdmin = userRole === "super-admin";
   
   const rooms = useQuery(api.rooms.getRooms);
 
@@ -20,16 +25,17 @@ export default function RoomSettings() {
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 animate-in slide-in-from-bottom-4 duration-500">
-      {/* Add New Room Card */}
-      <button 
-        className="h-full min-h-[150px] border-2 border-dashed border-slate-800 rounded-[2.5rem] flex flex-col items-center justify-center gap-3 hover:border-blue-500/50 hover:bg-blue-500/5 transition-all group"
-        onClick={() => setIsModalOpen(true)}
-      >
-        <div className="p-3 bg-slate-900 rounded-full group-hover:scale-110 transition-transform">
-          <Plus className="text-blue-500" />
-        </div>
-        <span className="font-black text-[10px] uppercase tracking-widest text-slate-500">Add New Unit</span>
-      </button>
+      {isSuperAdmin && (
+        <button 
+          className="h-full min-h-[150px] border-2 border-dashed border-slate-800 rounded-[2.5rem] flex flex-col items-center justify-center gap-3 hover:border-blue-500/50 hover:bg-blue-500/5 transition-all group"
+          onClick={() => setIsModalOpen(true)}
+        >
+          <div className="p-3 bg-slate-900 rounded-full group-hover:scale-110 transition-transform">
+            <Plus className="text-blue-500" />
+          </div>
+          <span className="font-black text-[10px] uppercase tracking-widest text-slate-500">Add New Unit</span>
+        </button>
+      )}
 
       {/* Existing Rooms List */}
       {rooms.map((room) => (
@@ -41,13 +47,16 @@ export default function RoomSettings() {
           
           <div className="flex gap-2">
             <button 
-              onClick={() => setEditingRoom(room)}
-              className="p-4 hover:bg-blue-500/10 text-slate-600 hover:text-blue-400 rounded-2xl transition-all"
+              onClick={() => isSuperAdmin && setEditingRoom(room)}
+              className={`p-4 rounded-2xl transition-all ${isSuperAdmin ? 'hover:bg-blue-500/10 text-slate-600 hover:text-blue-400' : 'bg-slate-800 text-slate-500 cursor-not-allowed'}`}
             >
               <Settings2 size={20} />
             </button>
 
-            <button className="p-4 hover:bg-red-500/10 text-slate-600 hover:text-red-500 rounded-2xl transition-all">
+            <button 
+              onClick={() => isSuperAdmin && undefined}
+              className={`p-4 rounded-2xl transition-all ${isSuperAdmin ? 'hover:bg-red-500/10 text-slate-600 hover:text-red-500' : 'bg-slate-800 text-slate-500 cursor-not-allowed'}`}
+            >
               <Trash2 size={20} />
             </button>
           </div>

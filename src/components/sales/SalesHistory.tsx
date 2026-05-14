@@ -18,12 +18,11 @@ function useSalesLogic(sales: any[] | undefined, searchTerm: string, currentPage
       .filter((s) => s.roomName.toLowerCase().includes(searchTerm.toLowerCase()))
       .map((s) => ({
         ...s,
-        // FORCE duration to be a whole number here
         duration: Math.round(s.duration || 0) 
       }));
   }, [sales, searchTerm]);
 
-  // 2. Calculate totals for the filtered set (The "Math" trick)
+
   const stats = useMemo(() => {
     return filteredSales.reduce(
       (acc, s) => ({
@@ -45,7 +44,11 @@ function useSalesLogic(sales: any[] | undefined, searchTerm: string, currentPage
   return { filteredSales, paginatedData, totalPages, stats };
 }
 
-export default function SalesHistory() {
+interface SalesHistoryProps {
+  userRole: "staff" | "admin" | "super-admin";
+}
+
+export default function SalesHistory({ userRole }: SalesHistoryProps) {
   const sales = useQuery(api.sales.getSalesHistory);
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
@@ -64,10 +67,10 @@ export default function SalesHistory() {
       {/* HEADER & STATS */}
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
         <div>
-          <h2 className="text-3xl font-black italic text-white flex items-center gap-3">
+          <h2 className="text-3xl italic text-white flex items-center gap-3">
             <ReceiptText className="text-blue-500" /> SALES AUDIT
           </h2>
-          <p className="text-[10px] text-slate-500 font-black uppercase tracking-[0.3em] mt-1">
+          <p className="text-[10px] text-slate-500 uppercase tracking-[0.3em] mt-1">
             Transaction History & Revenue Logs
           </p>
         </div>
@@ -87,15 +90,21 @@ export default function SalesHistory() {
       </div>
 
       {/* SEARCH BAR */}
-      <div className="bg-slate-900/50 p-2 rounded-[2rem] border border-slate-800/50">
-        <SalesSearch
-          searchTerm={searchTerm}
-          onSearchChange={(val) => {
-            setSearchTerm(val);
-            setCurrentPage(1); // Crucial: Reset to page 1 on new search
-          }}
-        />
-      </div>
+      {userRole !== "staff" ? (
+        <div className="bg-slate-900/50 p-2 rounded-[2rem] border border-slate-800/50">
+          <SalesSearch
+            searchTerm={searchTerm}
+            onSearchChange={(val) => {
+              setSearchTerm(val);
+              setCurrentPage(1); // Crucial: Reset to page 1 on new search
+            }}
+          />
+        </div>
+      ) : (
+        <div className="p-2 rounded-[2rem] border border-slate-800/50 text-slate-500 text-xs uppercase tracking-[0.3em]">
+          Staff can view sales history but search/filter is reserved for Admin accounts.
+        </div>
+      )}
 
       {/* TABLE SECTION */}
       {filteredSales.length > 0 ? (

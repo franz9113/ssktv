@@ -1,21 +1,42 @@
-import { query, mutation } from "./_generated/server";
+import { mutation } from "./_generated/server";
 import { v } from "convex/values";
 
-export const checkPassword = query({
-  args: { password: v.string(), username: v.optional(v.string()) },
+export const loginUser = mutation({
+  args: {
+    role: v.union(v.literal("staff"), v.literal("admin"), v.literal("super-admin")),
+    username: v.optional(v.string()),
+    password: v.optional(v.string()),
+    pin: v.optional(v.string()),
+  },
   handler: async (ctx, args) => {
-    const settings = await ctx.db.query("settings").first();
-    
-    if (!settings) return { role: null, error: "System not initialized" };
+    if (args.role === "staff") {
+      if (!args.pin) return { role: null, error: "PIN is required" };
 
-    if (args.username === settings.adminUsername && args.password === settings.adminPassword) {
-      return { role: "admin" };
+      const user = await ctx.db
+        .query("users")
+        .withIndex("by_pin", (q) => q.eq("pin", args.pin))
+        .unique();
+
+      if (!user || user.role !== "staff") {
+        return { role: null, error: "Invalid staff PIN" };
+      }
+
+      return { role: "staff", name: user.name };
     }
 
-    if (args.password === settings.staffPassword) {
-      return { role: "staff" };
+    if (!args.username || !args.password) {
+      return { role: null, error: "Username and password are required" };
     }
 
-    return { role: null };
+    const user = await ctx.db
+      .query("users")
+      .withIndex("by_username", (q) => q.eq("username", args.username))
+      .unique();
+
+    if (!user || user.password !== args.password || user.role !== args.role) {
+      return { role: null, error: "Invalid credentials" };
+    }
+
+    return { role: user.role, name: user.name };
   },
 });

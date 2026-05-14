@@ -7,9 +7,8 @@ export default defineSchema({
     status: v.string(), // "available", "occupied", "cleaning"
     hourlyRate: v.number(),
     startTime: v.optional(v.number()),
-    // These must be defined here to stop the red lines:
     isOpenTime: v.optional(v.boolean()),
-    isFixedTime: v.optional(v.boolean()), // Useful for your logic
+    isFixedTime: v.optional(v.boolean()), 
     currentSessionEnd: v.optional(v.number()),
     plannedDuration: v.optional(v.number()), 
     foodTotal: v.optional(v.number()),
@@ -31,13 +30,13 @@ export default defineSchema({
   }),
   users: defineTable({
     name: v.string(),
-    role: v.union(v.literal("admin"), v.literal("staff")),
+    role: v.union(v.literal("admin"), v.literal("staff"), v.literal("super-admin")),
     status: v.string(),
     
     // For Staff
     pin: v.optional(v.string()), 
     
-    // For Admin
+    // For Admin and Super Admin
     username: v.optional(v.string()),
     password: v.optional(v.string()),
   }).index("by_pin", ["pin"]).index("by_username", ["username"]),

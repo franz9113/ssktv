@@ -8,23 +8,57 @@ export const getUsers = query({
   },
 });
 
-// Create a new staff member
+// Create a new user
 export const createUser = mutation({
   args: {
     name: v.string(),
-    pin: v.string(),
-    role: v.union(v.literal("admin"), v.literal("staff")),
+    role: v.union(v.literal("admin"), v.literal("staff"), v.literal("super-admin")),
     status: v.string(),
+    pin: v.optional(v.string()),
+    username: v.optional(v.string()),
+    password: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     await ctx.db.insert("users", {
       name: args.name,
-      pin: args.pin,
       role: args.role,
       status: args.status,
+      pin: args.pin,
+      username: args.username,
+      password: args.password,
     });
   },
 });
+
+export const updateUser = mutation({
+  args: {
+    id: v.id("users"),
+    name: v.string(),
+    role: v.union(v.literal("admin"), v.literal("staff"), v.literal("super-admin")),
+    status: v.string(),
+    pin: v.optional(v.string()),
+    username: v.optional(v.string()),
+    password: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    await ctx.db.patch(args.id, {
+      name: args.name,
+      role: args.role,
+      status: args.status,
+      pin: args.pin,
+      username: args.username,
+      password: args.password,
+    });
+  },
+});
+
+export const deleteUser = mutation({
+  args: { id: v.id("users") },
+  handler: async (ctx, args) => {
+    await ctx.db.delete(args.id);
+  },
+});
+
 export const loginAdmin = query({
   args: { username: v.string(), password: v.string() },
   handler: async (ctx, args) => {

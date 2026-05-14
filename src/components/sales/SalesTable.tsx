@@ -39,7 +39,7 @@ export const SalesTable = React.memo(({ data }: { data: Sale[] }) => {
                   </span>
                 </td>
                 <td className="p-6 text-center text-slate-300 font-mono text-xs">
-                  {sale.duration.toFixed(1)}h
+                  {Math.floor(sale.duration)}h
                 </td>
                 <td className="p-6 text-right font-black text-emerald-400 text-lg">
                   ₱{sale.totalAmount.toLocaleString()}
